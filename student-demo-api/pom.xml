@@ -9,6 +9,17 @@
     <version>alpha-v1</version>
     <packaging>war</packaging>
 
+    <developers>
+        <developer>
+            <name>Nilotpal Majumdar</name>
+            <email>kutan16@gmail.com</email>
+            <roles>
+                <role>Software Developer</role>
+            </roles>
+            <timezone>IST</timezone>
+        </developer>
+    </developers>
+
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
@@ -86,7 +97,7 @@
         </dependency>
     </dependencies>
     <build>
-<!--        <finalName>student-demo</finalName>-->
+        <!--        <finalName>student-demo</finalName>-->
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
