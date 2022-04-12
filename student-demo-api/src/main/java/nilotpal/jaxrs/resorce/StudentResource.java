@@ -47,6 +47,7 @@ public class StudentResource {
     public Response getStudent(@PathParam("id") Integer studentId, @Context HttpHeaders httpHeaders) {
         log.info("Inside : getStudent start");
         try {
+            log.info("testing hk2 dependency injection @Inject on CommonDataService to print list of credentials");
             log.info(commonDataService.getClientList().toString());
             if(!checkForAuthorization("get", httpHeaders)) {
                 return Response.status(Response.Status.UNAUTHORIZED)
