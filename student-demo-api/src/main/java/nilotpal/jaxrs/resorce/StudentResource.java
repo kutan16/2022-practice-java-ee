@@ -1,13 +1,16 @@
 package nilotpal.jaxrs.resorce;
 
 import nilotpal.data.CommonData;
+import nilotpal.entity.Client;
 import nilotpal.entity.Credentials;
 import nilotpal.entity.Student;
 import nilotpal.service.CommonDataService;
+import nilotpal.service.StudentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -28,10 +31,14 @@ public class StudentResource {
 
     //    private final DbConfig dbConfig;
     private final CommonDataService commonDataService;
+    private final StudentService studentService;
+    private final StudentService employeeService;
 
     @Inject
-    public StudentResource(CommonDataService commonDataService) {
+    public StudentResource(CommonDataService commonDataService, @Named("a") StudentService studentService, @Named("b") StudentService employeeService) {
         this.commonDataService = commonDataService;
+        this.studentService = studentService;
+        this.employeeService = employeeService;
     }
 
 
@@ -48,7 +55,7 @@ public class StudentResource {
         log.info("Inside : getStudent start");
         try {
             log.info("testing hk2 dependency injection @Inject on CommonDataService to print list of credentials");
-            log.info(commonDataService.getClientList().toString());
+            log.info(commonDataService.getCredentials().toString());
             if(!checkForAuthorization("get", httpHeaders)) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity("Authorization received is incorrect or does not have proper role")
@@ -103,6 +110,18 @@ public class StudentResource {
         return false;
     }
 
+    private Student fetchStudent(Integer studentId, List<Student> students) {
+        return students.stream()
+                .filter(student -> studentId.equals(student.getStudent_id()))
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Create resource of single student
+     *
+     * @param student accept a student object
+     * @return response if student created or not
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -113,12 +132,27 @@ public class StudentResource {
                 .build();
     }
 
-    private Student fetchStudent(Integer studentId, List<Student> students) {
-        return students.stream()
-                .filter(student -> studentId.equals(student.getStudent_id()))
-                .findFirst().orElse(null);
+    /**
+     * Get list of Clients from database
+     *
+     * @return list of clients
+     */
+    @GET
+    @Path("clients")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getClients() {
+        log.info("Inside getClients Resource");
+        List<Client> clients = studentService.fetchClients();
+        if(null != clients) {
+            return Response.status(Response.Status.OK)
+                    .entity(clients)
+                    .build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Clients not found in Db or DB connection failed ")
+                    .build();
+        }
     }
-
     /**
      * Injecting mock object of HttpHeaders for the sole purpose of Junit test
      *

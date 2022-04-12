@@ -4,6 +4,7 @@ import nilotpal.entity.Client;
 import nilotpal.entity.Credentials;
 import nilotpal.entity.Student;
 import nilotpal.entity.User;
+import org.jvnet.hk2.annotations.Contract;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.List;
 /**
  * A Common Class which contains Student, Client & User Data
  */
+@Contract
 public class CommonDataService {
     /**
      * Student Data
