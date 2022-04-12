@@ -78,11 +78,11 @@ public class StudentServiceImpl implements StudentService {
      */
     private void populateClient(ResultSet rs, List<Client> listOfClient) throws SQLException {
         Client client = new Client();
-        client.setId(rs.getString("client_id"));
-        client.setClientSecret(rs.getString("client_secret"));
-        client.setRedirectUri(rs.getString("redirect_uri"));
-        client.setScope(rs.getString("scope"));
-        client.setAuthorizedGrantTypes(rs.getString("authorized_grant_types"));
+        client.setClient_id(rs.getString("client_id"));
+        client.setClient_secret(rs.getString("client_secret"));
+        client.setRedirect_uri(rs.getString("redirect_uri"));
+        client.setRoles(rs.getString("scope"));
+        client.setAuthorized_grant_types(rs.getString("authorized_grant_types"));
         listOfClient.add(client);
     }
 

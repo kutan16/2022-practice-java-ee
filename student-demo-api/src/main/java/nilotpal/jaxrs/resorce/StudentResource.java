@@ -29,11 +29,16 @@ public class StudentResource {
     private static final String POST_ROLES_ALLOWED = "ADMIN";
     private static final Logger log = LoggerFactory.getLogger(StudentResource.class);
 
-    //    private final DbConfig dbConfig;
     private final CommonDataService commonDataService;
     private final StudentService studentService;
     private final StudentService employeeService;
 
+    /**
+     * Injecting dependencies via the Constructor
+     * @param commonDataService The Common Data Service with sample in memory data
+     * @param studentService The Student Service implementation class with connection to Db
+     * @param employeeService An Empty Employee Service class
+     */
     @Inject
     public StudentResource(CommonDataService commonDataService, @Named("a") StudentService studentService, @Named("b") StudentService employeeService) {
         this.commonDataService = commonDataService;
