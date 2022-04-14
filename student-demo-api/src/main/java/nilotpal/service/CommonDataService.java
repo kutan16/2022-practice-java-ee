@@ -36,8 +36,8 @@ public class CommonDataService {
      *
      * @return A Singleton list of Client
      */
-    public List<Client> getClientList() {
-        return Collections.singletonList(new Client("webappclient", "webappclientsecret", "http://localhost:9180/callback",
+    public List<Client.Clients> getClientList() {
+        return Collections.singletonList(new Client.Clients("webappclient", "webappclientsecret", "http://localhost:9180/callback",
                 "resource.read resource.write", "authorization_code refresh_token"));
     }
 

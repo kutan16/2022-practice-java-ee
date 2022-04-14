@@ -1,9 +1,9 @@
 package nilotpal.data;
 
 import nilotpal.entity.Client;
-import nilotpal.entity.User;
 import nilotpal.entity.Credentials;
 import nilotpal.entity.Student;
+import nilotpal.entity.User;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,6 +16,7 @@ import java.util.List;
 public class CommonData {
     /**
      * Student Data
+     *
      * @return A list of Students
      */
     public static List<Student> getStudents() {
@@ -30,15 +31,17 @@ public class CommonData {
 
     /**
      * Client Data
+     *
      * @return A Singleton list of Client
      */
-    public static List<Client> getClientList() {
-        return Collections.singletonList(new Client("webappclient", "webappclientsecret", "http://localhost:9180/callback",
+    public static List<Client.Clients> getClientList() {
+        return Collections.singletonList(new Client.Clients("webappclient", "webappclientsecret", "http://localhost:9180/callback",
                 "resource.read resource.write", "authorization_code refresh_token"));
     }
 
     /**
      * User Data
+     *
      * @return A Singleton List of User
      */
     public static List<User> getUserList() {
@@ -47,6 +50,7 @@ public class CommonData {
 
     /**
      * Credentials storage
+     *
      * @return List of Credentials
      */
     public static List<Credentials> getCredentials() {

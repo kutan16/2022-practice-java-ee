@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -24,28 +23,32 @@ import java.util.List;
  */
 @Path("student")
 public class StudentResource {
-    //    private HttpHeaders httpHeaders;
     private static final String GET_ROLES_ALLOWED = "ADMIN,USER";
     private static final String POST_ROLES_ALLOWED = "ADMIN";
     private static final Logger log = LoggerFactory.getLogger(StudentResource.class);
 
+    private final HttpHeaders httpHeaders;
     private final CommonDataService commonDataService;
     private final StudentService studentService;
     private final StudentService employeeService;
 
     /**
      * Injecting dependencies via the Constructor
+     *
+     * @param httpHeaders       HttpHeaders from request context
      * @param commonDataService The Common Data Service with sample in memory data
-     * @param studentService The Student Service implementation class with connection to Db
-     * @param employeeService An Empty Employee Service class
+     * @param studentService    The Student Service implementation class with connection to Db
+     * @param employeeService   An Empty Employee Service class
      */
     @Inject
-    public StudentResource(CommonDataService commonDataService, @Named("a") StudentService studentService, @Named("b") StudentService employeeService) {
+    public StudentResource(HttpHeaders httpHeaders, CommonDataService commonDataService,
+                           @Named("a") StudentService studentService,
+                           @Named("b") StudentService employeeService) {
+        this.httpHeaders = httpHeaders;
         this.commonDataService = commonDataService;
         this.studentService = studentService;
         this.employeeService = employeeService;
     }
-
 
     /**
      * Simply checks for the provided studentId in the Student Data.
@@ -56,12 +59,10 @@ public class StudentResource {
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStudent(@PathParam("id") Integer studentId, @Context HttpHeaders httpHeaders) {
+    public Response getStudent(@PathParam("id") Integer studentId) {
         log.info("Inside : getStudent start");
         try {
-            log.info("testing hk2 dependency injection @Inject on CommonDataService to print list of credentials");
-            log.info(commonDataService.getCredentials().toString());
-            if(!checkForAuthorization("get", httpHeaders)) {
+            if(!checkForAuthorization()) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity("Authorization received is incorrect or does not have proper role")
                         .build();
@@ -88,7 +89,7 @@ public class StudentResource {
                 .build();
     }
 
-    private boolean checkForAuthorization(String method, HttpHeaders httpHeaders) throws NullPointerException {
+    private boolean checkForAuthorization() throws NullPointerException {
         String auth = httpHeaders.getHeaderString("Authorization");
         String authToken;
         String decodedToken;
@@ -101,18 +102,11 @@ public class StudentResource {
         } else {
             return false;
         }
-        List<Credentials> creds = CommonData.getCredentials();
-        if("GET".equalsIgnoreCase(method)) {
-            return creds.stream().anyMatch(credentials -> credentials.getUsername().equalsIgnoreCase(user_credentials[0])
-                    && credentials.getPassword().equalsIgnoreCase(user_credentials[1])
-                    && (credentials.getRoles().contains(GET_ROLES_ALLOWED.split(",")[0].toLowerCase())
-                    || credentials.getRoles().contains(GET_ROLES_ALLOWED.split(",")[1].toLowerCase())));
-        } else if("POST".equalsIgnoreCase(method)) {
-            return creds.stream().anyMatch(credentials -> credentials.getUsername().equalsIgnoreCase(user_credentials[0])
-                    && credentials.getPassword().equalsIgnoreCase(user_credentials[1])
-                    && credentials.getRoles().contains(POST_ROLES_ALLOWED));
-        }
-        return false;
+        List<Credentials> credentials = CommonData.getCredentials();
+        return credentials.stream().anyMatch(credentialsMatch -> credentialsMatch.getUsername().equalsIgnoreCase(user_credentials[0])
+                && credentialsMatch.getPassword().equalsIgnoreCase(user_credentials[1])
+                && (credentialsMatch.getRoles().contains(GET_ROLES_ALLOWED.split(",")[0].toLowerCase())
+                || credentialsMatch.getRoles().contains(GET_ROLES_ALLOWED.split(",")[1].toLowerCase())));
     }
 
     private Student fetchStudent(Integer studentId, List<Student> students) {
@@ -132,6 +126,11 @@ public class StudentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postStudent(Student student) {
         log.info("Student Data received is : " + student.toString());
+        if(!checkForAuthorization()) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Authorization received is incorrect or does not have proper role")
+                    .build();
+        }
         return Response.status(Response.Status.OK)
                 .entity("Student Created")
                 .build();
@@ -147,7 +146,12 @@ public class StudentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getClients() {
         log.info("Inside getClients Resource");
-        List<Client> clients = studentService.fetchClients();
+        if(!checkForAuthorization()) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Authorization received is incorrect or does not have proper role")
+                    .build();
+        }
+        Client clients = studentService.fetchClients();
         if(null != clients) {
             return Response.status(Response.Status.OK)
                     .entity(clients)
@@ -158,12 +162,31 @@ public class StudentResource {
                     .build();
         }
     }
+
     /**
-     * Injecting mock object of HttpHeaders for the sole purpose of Junit test
+     * Get list of Clients from database
      *
-     * @param httpHeaders - injects mock instance of HttpHeaders
+     * @return list of clients
      */
-//    public void setHttpHeaders(HttpHeaders httpHeaders) {
-//        this.httpHeaders = httpHeaders;
-//    }
+    @GET
+    @Path("clients/asd")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getClient_asd() {
+        log.info("Inside getClient_asd Resource");
+        if(!checkForAuthorization()) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Authorization received is incorrect or does not have proper role")
+                    .build();
+        }
+        Client clients = employeeService.fetchClients();
+        if(null != clients) {
+            return Response.status(Response.Status.OK)
+                    .entity(clients)
+                    .build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Clients not found in Db or DB connection failed ")
+                    .build();
+        }
+    }
 }

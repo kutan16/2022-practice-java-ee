@@ -2,14 +2,10 @@ package nilotpal.service;
 
 import nilotpal.config.database.DatasourceConfig;
 import nilotpal.entity.Client;
-import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Named;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -44,7 +40,7 @@ public class StudentServiceImpl implements StudentService {
      * @return A list of Client
      */
     @Override
-    public List<Client> fetchClients() {
+    public Client fetchClients() {
         log.info("Inside fetchClients of StudentServiceImpl");
         if(null != connection) {
             try {
@@ -52,12 +48,14 @@ public class StudentServiceImpl implements StudentService {
                 log.info("Prepared statement created = " + preparedStatement.toString());
                 ResultSet rs = preparedStatement.executeQuery();
                 log.info("Result set fetched");
-                List<Client> listOfClient = new ArrayList<>();
+                Client rootClient = new Client();
+                List<Client.Clients> listOfClient = new ArrayList<>();
                 while (rs.next()) {
                     populateClient(rs, listOfClient);
                 }
                 if(!listOfClient.isEmpty()) {
-                    return listOfClient;
+                    rootClient.setClients(listOfClient);
+                    return rootClient;
                 }
                 return null;
             } catch (Exception ce) {
@@ -76,8 +74,8 @@ public class StudentServiceImpl implements StudentService {
      * @param listOfClient A list of Client
      * @throws SQLException Exception might be caused due to null result set or incorrect column names or any other scenarios
      */
-    private void populateClient(ResultSet rs, List<Client> listOfClient) throws SQLException {
-        Client client = new Client();
+    private void populateClient(ResultSet rs, List<Client.Clients> listOfClient) throws SQLException {
+        Client.Clients client = new Client.Clients();
         client.setClient_id(rs.getString("client_id"));
         client.setClient_secret(rs.getString("client_secret"));
         client.setRedirect_uri(rs.getString("redirect_uri"));
