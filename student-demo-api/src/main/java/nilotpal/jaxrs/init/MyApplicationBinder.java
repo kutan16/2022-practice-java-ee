@@ -1,4 +1,4 @@
-package nilotpal.jaxrs.resorce.init;
+package nilotpal.jaxrs.init;
 
 import nilotpal.config.database.DatasourceConfig;
 import nilotpal.service.*;
