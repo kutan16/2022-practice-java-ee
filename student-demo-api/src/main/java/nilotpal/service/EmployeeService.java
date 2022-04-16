@@ -12,7 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
 
-public class EmployeeService implements StudentService {
+public class EmployeeService implements ServiceInterface {
     private Connection connection = null;
     private static final Logger log = LoggerFactory.getLogger(EmployeeService.class);
 

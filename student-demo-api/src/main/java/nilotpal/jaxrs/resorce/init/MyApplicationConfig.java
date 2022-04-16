@@ -1,4 +1,4 @@
-package nilotpal.config.injection;
+package nilotpal.jaxrs.resorce.init;
 
 import nilotpal.jaxrs.resorce.StudentResource;
 import org.glassfish.jersey.server.ResourceConfig;

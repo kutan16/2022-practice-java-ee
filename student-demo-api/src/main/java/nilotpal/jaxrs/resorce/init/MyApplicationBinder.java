@@ -1,10 +1,7 @@
-package nilotpal.config.injection;
+package nilotpal.jaxrs.resorce.init;
 
 import nilotpal.config.database.DatasourceConfig;
-import nilotpal.service.CommonDataService;
-import nilotpal.service.EmployeeService;
-import nilotpal.service.StudentService;
-import nilotpal.service.StudentServiceImpl;
+import nilotpal.service.*;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +16,10 @@ public class MyApplicationBinder extends AbstractBinder {
         log.info("Creating my application binder");
         bindAsContract(DatasourceConfig.class).in(Singleton.class);
         bindAsContract(CommonDataService.class);
-        bind(StudentServiceImpl.class).named("a").to(StudentService.class).in(Singleton.class);
-        bind(EmployeeService.class).named("b").to(StudentService.class).in(Singleton.class);
-        bindAsContract(StudentService.class);
+        bind(StudentService.class).named("studentService").to(ServiceInterface.class).in(Singleton.class);
+        bind(EmployeeService.class).named("employeeService").to(ServiceInterface.class).in(Singleton.class);
+        bind(UserServiceImpl.class).named("userService").to(UserService.class).in(Singleton.class);
+        bindAsContract(ServiceInterface.class);
+        bindAsContract(UserService.class);
     }
 }

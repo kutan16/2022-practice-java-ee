@@ -4,8 +4,9 @@ import nilotpal.data.CommonData;
 import nilotpal.entity.Client;
 import nilotpal.entity.Credentials;
 import nilotpal.entity.Student;
-import nilotpal.service.CommonDataService;
-import nilotpal.service.StudentService;
+import nilotpal.entity.User;
+import nilotpal.service.ServiceInterface;
+import nilotpal.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,26 +29,27 @@ public class StudentResource {
     private static final Logger log = LoggerFactory.getLogger(StudentResource.class);
 
     private final HttpHeaders httpHeaders;
-    private final CommonDataService commonDataService;
-    private final StudentService studentService;
-    private final StudentService employeeService;
+    private final ServiceInterface studentService;
+    private final ServiceInterface employeeService;
+    private final UserService userService;
 
     /**
      * Injecting dependencies via the Constructor
      *
-     * @param httpHeaders       HttpHeaders from request context
-     * @param commonDataService The Common Data Service with sample in memory data
-     * @param studentService    The Student Service implementation class with connection to Db
-     * @param employeeService   An Empty Employee Service class
+     * @param httpHeaders     HttpHeaders from request context
+     * @param studentService  The Student Service implementation class with connection to Db
+     * @param employeeService An Employee Service implementation class
+     * @param userService     A User Service implementation class
      */
     @Inject
-    public StudentResource(HttpHeaders httpHeaders, CommonDataService commonDataService,
-                           @Named("a") StudentService studentService,
-                           @Named("b") StudentService employeeService) {
+    public StudentResource(HttpHeaders httpHeaders,
+                           @Named("studentService") ServiceInterface studentService,
+                           @Named("employeeService") ServiceInterface employeeService,
+                           @Named("userService") UserService userService) {
         this.httpHeaders = httpHeaders;
-        this.commonDataService = commonDataService;
         this.studentService = studentService;
         this.employeeService = employeeService;
+        this.userService = userService;
     }
 
     /**
@@ -116,24 +118,85 @@ public class StudentResource {
     }
 
     /**
-     * Create resource of single student
+     * Create resource of single user
      *
-     * @param student accept a student object
-     * @return response if student created or not
+     * @param user accept a user object
+     * @return response if user created or not
      */
     @POST
+    @Path("user")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postStudent(Student student) {
-        log.info("Student Data received is : " + student.toString());
+    public Response postUsers(User user) {
+        log.info("User Data received is : " + user.toString());
         if(!checkForAuthorization()) {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity("Authorization received is incorrect or does not have proper role")
                     .build();
         }
-        return Response.status(Response.Status.OK)
-                .entity("Student Created")
-                .build();
+        if(userService.addUser(user)) {
+            return Response.status(Response.Status.OK)
+                    .entity("User Created")
+                    .build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Problems occurred while adding the user")
+                    .build();
+        }
+    }
+
+    /**
+     * Returns the whole list of Users
+     *
+     * @return A list of users from the DB
+     */
+    @GET
+    @Path("users")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listUsers() {
+        if(!checkForAuthorization()) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Authorization received is incorrect or does not have proper role")
+                    .build();
+        }
+        List<User> listOfUsers = userService.listAllUsers();
+        if(null != listOfUsers) {
+            return Response.status(Response.Status.OK)
+                    .entity(listOfUsers)
+                    .build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("No Users found in db")
+                    .build();
+        }
+    }
+
+    /**
+     * Delete the user from the db
+     *
+     * @param user_id the user_id of the user based on which it will delete the user
+     * @return Response indicating the use is deleted or not
+     */
+    @DELETE
+    @Path("user/{user_id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteUser(@PathParam("user_id") String user_id) {
+        if(!checkForAuthorization()) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Authorization received is incorrect or does not have proper role")
+                    .build();
+        }
+        if(userService.deleteUser(user_id)) {
+            return Response.status(Response.Status.OK)
+                    .entity("User with userId : " + user_id + " has been deleted from db")
+                    .build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("No Users found in db")
+                    .build();
+        }
     }
 
     /**
@@ -154,7 +217,7 @@ public class StudentResource {
         Client clients = studentService.fetchClients();
         if(null != clients) {
             return Response.status(Response.Status.OK)
-                    .entity(clients)
+                    .entity(clients.getClients())
                     .build();
         } else {
             return Response.status(Response.Status.BAD_REQUEST)
