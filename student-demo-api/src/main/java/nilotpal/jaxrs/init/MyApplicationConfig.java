@@ -1,7 +1,7 @@
 package nilotpal.jaxrs.init;
 
 import nilotpal.jaxrs.authentication.AuthenticationFilter;
-import nilotpal.jaxrs.resorce.StudentResource;
+import nilotpal.jaxrs.resource.StudentResource;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

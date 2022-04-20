@@ -1,4 +1,4 @@
-package nilotpal.jaxrs.resorce;
+package nilotpal.jaxrs.resource;
 
 import nilotpal.data.CommonData;
 import nilotpal.entity.Client;
@@ -61,19 +61,10 @@ public class StudentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStudent(@PathParam("id") Integer studentId) {
         log.info("Inside : getStudent start");
-        try {
-        } catch (Exception e) {
-            log.info("Inside : getStudent exception block");
-            log.error(e.toString());
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("error occurred")
-                    .build();
-        }
         log.info("Student id received : " + studentId);
         List<Student> students = CommonData.getStudents();
         Student result = fetchStudent(studentId, students);
         log.info("Fetched student data : " + result);
-        Response response;
         if(result == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Student not found with StudentId : " + studentId)
