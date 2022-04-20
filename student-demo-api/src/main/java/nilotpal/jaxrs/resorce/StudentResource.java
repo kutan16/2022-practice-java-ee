@@ -2,7 +2,6 @@ package nilotpal.jaxrs.resorce;
 
 import nilotpal.data.CommonData;
 import nilotpal.entity.Client;
-import nilotpal.entity.Credentials;
 import nilotpal.entity.Student;
 import nilotpal.entity.User;
 import nilotpal.service.ServiceInterface;
@@ -16,7 +15,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Base64;
 import java.util.List;
 
 /**
@@ -64,11 +62,6 @@ public class StudentResource {
     public Response getStudent(@PathParam("id") Integer studentId) {
         log.info("Inside : getStudent start");
         try {
-            if(!checkForAuthorization()) {
-                return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity("Authorization received is incorrect or does not have proper role")
-                        .build();
-            }
         } catch (Exception e) {
             log.info("Inside : getStudent exception block");
             log.error(e.toString());
@@ -91,26 +84,6 @@ public class StudentResource {
                 .build();
     }
 
-    private boolean checkForAuthorization() throws NullPointerException {
-        String auth = httpHeaders.getHeaderString("Authorization");
-        String authToken;
-        String decodedToken;
-        String[] user_credentials;
-        if(null != auth && auth.contains("Basic")) {
-            String[] token = auth.split(" ");
-            authToken = token[1];
-            decodedToken = new String(Base64.getDecoder().decode(authToken));
-            user_credentials = decodedToken.split(":");
-        } else {
-            return false;
-        }
-        List<Credentials> credentials = CommonData.getCredentials();
-        return credentials.stream().anyMatch(credentialsMatch -> credentialsMatch.getUsername().equalsIgnoreCase(user_credentials[0])
-                && credentialsMatch.getPassword().equalsIgnoreCase(user_credentials[1])
-                && (credentialsMatch.getRoles().contains(GET_ROLES_ALLOWED.split(",")[0].toLowerCase())
-                || credentialsMatch.getRoles().contains(GET_ROLES_ALLOWED.split(",")[1].toLowerCase())));
-    }
-
     private Student fetchStudent(Integer studentId, List<Student> students) {
         return students.stream()
                 .filter(student -> studentId.equals(student.getStudent_id()))
@@ -129,11 +102,6 @@ public class StudentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postUsers(User user) {
         log.info("User Data received is : " + user.toString());
-        if(!checkForAuthorization()) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Authorization received is incorrect or does not have proper role")
-                    .build();
-        }
         if(userService.addUser(user)) {
             return Response.status(Response.Status.OK)
                     .entity("User Created")
@@ -155,11 +123,6 @@ public class StudentResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response listUsers() {
-        if(!checkForAuthorization()) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Authorization received is incorrect or does not have proper role")
-                    .build();
-        }
         List<User> listOfUsers = userService.listAllUsers();
         if(null != listOfUsers) {
             return Response.status(Response.Status.OK)
@@ -183,11 +146,6 @@ public class StudentResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteUser(@PathParam("user_id") String user_id) {
-        if(!checkForAuthorization()) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Authorization received is incorrect or does not have proper role")
-                    .build();
-        }
         if(userService.deleteUser(user_id)) {
             return Response.status(Response.Status.OK)
                     .entity("User with userId : " + user_id + " has been deleted from db")
@@ -209,11 +167,6 @@ public class StudentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getClients() {
         log.info("Inside getClients Resource");
-        if(!checkForAuthorization()) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Authorization received is incorrect or does not have proper role")
-                    .build();
-        }
         Client clients = studentService.fetchClients();
         if(null != clients) {
             return Response.status(Response.Status.OK)
@@ -236,11 +189,6 @@ public class StudentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getClient_asd() {
         log.info("Inside getClient_asd Resource");
-        if(!checkForAuthorization()) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Authorization received is incorrect or does not have proper role")
-                    .build();
-        }
         Client clients = employeeService.fetchClients();
         if(null != clients) {
             return Response.status(Response.Status.OK)
