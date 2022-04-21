@@ -1,5 +1,7 @@
 package nilotpal.jaxrs.resource;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import nilotpal.data.CommonData;
 import nilotpal.entity.Client;
 import nilotpal.entity.Student;
@@ -16,6 +18,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Resource Class  which exposes /student api
@@ -30,6 +33,13 @@ public class StudentResource {
     private final ServiceInterface studentService;
     private final ServiceInterface employeeService;
     private final UserService userService;
+
+    private final Cache<String, Client> cache = Caffeine
+            .newBuilder()
+            .expireAfterWrite(1, TimeUnit.MINUTES)
+            .expireAfterAccess(30, TimeUnit.SECONDS)
+            .maximumSize(20)
+            .build();
 
     /**
      * Injecting dependencies via the Constructor
@@ -180,8 +190,13 @@ public class StudentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getClient_asd() {
         log.info("Inside getClient_asd Resource");
-        Client clients = employeeService.fetchClients();
+        Client clients = cache.getIfPresent("asd");
+        if(null == clients) {
+            log.info("not fond in cache. calling db");
+            clients = employeeService.fetchClients();
+        }
         if(null != clients) {
+            cache.put("asd", clients);
             return Response.status(Response.Status.OK)
                     .entity(clients)
                     .build();
