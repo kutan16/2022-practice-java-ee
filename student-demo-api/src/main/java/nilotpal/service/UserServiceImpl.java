@@ -79,6 +79,30 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public User getUser(String userId) {
+        log.info("Inside getUser of UserServiceImpl");
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("select * from users WHERE (`user_id` = ?)");
+            preparedStatement.setString(1, userId);
+            ResultSet rs = preparedStatement.executeQuery();
+            User user = new User();
+            while (rs.next()) {
+                user.setUser_id(rs.getString("user_id"));
+                user.setPassword(rs.getString("password"));
+                user.setRoles(rs.getString("roles"));
+                user.setScopes(rs.getString("scopes"));
+            }
+            if(!user.getUser_id().isEmpty()) {
+                return user;
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("Error executing sql statement using the connection");
+            return null;
+        }
+    }
+
     private void poplateUsers(ResultSet rs, List<User> listOfUsers) throws SQLException {
         User user = new User();
         user.setUser_id(rs.getString("user_id"));
