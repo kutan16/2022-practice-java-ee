@@ -223,13 +223,9 @@ public class StudentResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response acceptUsers(List<SingleUser> users) {
-//        log.info("User Data received is : " + Optional.ofNullable(users.toString()));
+        log.info("User Data received is : " + Optional.ofNullable(users.toString()));
         List<User> fetchedUsers = users.stream()
-                .map(singleUser -> {
-                    String userId = singleUser.getUserId();
-                    return UserUtil.processUserId(userService, userId);
-                })
-                .filter(Objects::nonNull)
+                .map(singleUser -> UserUtil.processUserId(userService, singleUser.getUserId()))
                 .collect(Collectors.toList());
         if(!fetchedUsers.isEmpty()) {
             return Response.status(Response.Status.OK)
