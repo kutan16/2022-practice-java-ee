@@ -32,13 +32,11 @@ public class UserUtil {
         User user = cache.getIfPresent(userId);
         if(null == user) {
             user = userService.getUser(userId);
-            if(null != user) {
-                cache.put(userId, user);
-                return user;
+            if(null == user) {
+                user = new User(userId, "not_found", "not_found", "not_found");
             }
-        } else {
-            return user;
+            cache.put(userId, user);
         }
-        return null;
+        return user;
     }
 }
