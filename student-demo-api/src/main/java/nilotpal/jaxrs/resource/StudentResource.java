@@ -4,22 +4,26 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import nilotpal.data.CommonData;
 import nilotpal.entity.Client;
+import nilotpal.entity.SingleUser;
 import nilotpal.entity.Student;
 import nilotpal.entity.User;
 import nilotpal.service.ServiceInterface;
 import nilotpal.service.UserService;
+import nilotpal.util.UserUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.Cacheable;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Resource Class  which exposes /student api
@@ -207,4 +211,35 @@ public class StudentResource {
                     .build();
         }
     }
+
+    /**
+     * Accepts a list of user Id as an array and returns list of Users
+     *
+     * @param users list of Single user Id
+     * @return List of Users
+     */
+    @POST
+    @Path("user/retrieve")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response acceptUsers(List<SingleUser> users) {
+//        log.info("User Data received is : " + Optional.ofNullable(users.toString()));
+        List<User> fetchedUsers = users.stream()
+                .map(singleUser -> {
+                    String userId = singleUser.getUserId();
+                    return UserUtil.processUserId(userService, userId);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        if(!fetchedUsers.isEmpty()) {
+            return Response.status(Response.Status.OK)
+                    .entity(fetchedUsers)
+                    .build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Not able to fetch any Users based on the provided userId")
+                    .build();
+        }
+    }
+
 }

@@ -28,4 +28,12 @@ public interface UserService {
      * @return list of all users
      */
     List<User> listAllUsers();
+
+    /**
+     * Returns a user
+     *
+     * @param userId The userId of the User
+     * @return The User
+     */
+    User getUser(String userId);
 }
