@@ -19,6 +19,7 @@ public class UserUtil {
             .expireAfterWrite(1, TimeUnit.MINUTES)
             .expireAfterAccess(30, TimeUnit.SECONDS)
             .maximumSize(20)
+            .initialCapacity(5)
             .build();
 
     /**

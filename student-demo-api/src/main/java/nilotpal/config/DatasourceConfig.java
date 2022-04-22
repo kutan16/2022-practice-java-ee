@@ -1,4 +1,4 @@
-package nilotpal.config.database;
+package nilotpal.config;
 
 import com.mysql.cj.jdbc.MysqlDataSource;
 import org.slf4j.Logger;
