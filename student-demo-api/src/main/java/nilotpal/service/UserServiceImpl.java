@@ -1,6 +1,6 @@
 package nilotpal.service;
 
-import nilotpal.config.database.DatasourceConfig;
+import nilotpal.config.DatasourceConfig;
 import nilotpal.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +13,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementation class of UserService
+ */
 public class UserServiceImpl implements UserService {
     private Connection connection = null;
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
+    /**
+     * Initializing connection object for mysql database if not already present
+     */
     @PostConstruct
     public void initiate() {
         try {
@@ -28,6 +34,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * @param user A User entity
+     * @return true or false depending on the query executed or not
+     */
     @Override
     public boolean addUser(User user) {
         log.info("Inside addUser of UserServiceImpl");
@@ -45,6 +55,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * @param userId The user_id of the User
+     * @return true or false depending on the query executed or not
+     */
     @Override
     public boolean deleteUser(String userId) {
         log.info("Inside deleteUser of UserServiceImpl");
@@ -59,6 +73,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * @return A list of Users
+     */
     @Override
     public List<User> listAllUsers() {
         log.info("Inside listAllUsers of UserServiceImpl");
@@ -79,6 +96,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * @param userId The userId of the User
+     * @return A User
+     */
     @Override
     public User getUser(String userId) {
         log.info("Inside getUser of UserServiceImpl");

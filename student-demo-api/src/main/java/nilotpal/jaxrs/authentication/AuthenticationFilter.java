@@ -12,6 +12,9 @@ import javax.ws.rs.ext.Provider;
 import java.util.Base64;
 import java.util.List;
 
+/**
+ * Custom Authentication Filter to intercept all api requests made and perform the authentication
+ */
 @Provider
 public class AuthenticationFilter implements ContainerRequestFilter {
 
@@ -35,13 +38,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     private boolean checkForAuthorization(ContainerRequestContext requestContext) throws NullPointerException {
         String auth = requestContext.getHeaderString("Authorization");
-        String authToken;
         String decodedToken;
         String[] user_credentials;
-        if(null != auth && auth.contains("Basic")) {
-            String[] token = auth.split(" ");
-            authToken = token[1];
-            decodedToken = new String(Base64.getDecoder().decode(authToken));
+        if(null != auth && auth.contains("Basic ")) {
+            String token = auth.substring("Basic ".length());
+            decodedToken = new String(Base64.getDecoder().decode(token));
             user_credentials = decodedToken.split(":");
         } else {
             return false;

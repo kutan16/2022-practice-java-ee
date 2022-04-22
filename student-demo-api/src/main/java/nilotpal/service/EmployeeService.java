@@ -1,6 +1,6 @@
 package nilotpal.service;
 
-import nilotpal.config.database.DatasourceConfig;
+import nilotpal.config.DatasourceConfig;
 import nilotpal.entity.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

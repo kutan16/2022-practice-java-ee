@@ -1,6 +1,6 @@
 package nilotpal.service;
 
-import nilotpal.config.database.DatasourceConfig;
+import nilotpal.config.DatasourceConfig;
 import nilotpal.entity.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,14 +83,4 @@ public class StudentService implements ServiceInterface {
         client.setAuthorized_grant_types(rs.getString("authorized_grant_types"));
         listOfClient.add(client);
     }
-
-//    @PreDestroy
-//    public void destroy() {
-//        try {
-//            connection.close();
-//        } catch (Exception se) {
-//            log.error("connection closing error");
-//            log.error(se.toString());
-//        }
-//    }
 }
