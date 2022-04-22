@@ -22,7 +22,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(AuthenticationFilter.class);
 
     public AuthenticationFilter() {
-        log.info("Initializing Aythentication Filter");
+        log.info("Initializing Authentication Filter");
     }
 
     @Override

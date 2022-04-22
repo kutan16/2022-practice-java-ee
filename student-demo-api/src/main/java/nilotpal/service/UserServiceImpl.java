@@ -1,11 +1,12 @@
 package nilotpal.service;
 
-import nilotpal.config.DatasourceConfig;
 import nilotpal.entity.User;
+import nilotpal.util.DBUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,6 +20,12 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private Connection connection = null;
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+    private final DBUtil dbUtil;
+
+    @Inject
+    public UserServiceImpl(DBUtil dbUtil) {
+        this.dbUtil = dbUtil;
+    }
 
     /**
      * Initializing connection object for mysql database if not already present
@@ -27,7 +34,7 @@ public class UserServiceImpl implements UserService {
     public void initiate() {
         try {
             log.info("Inside post construct of StudentServiceImpl");
-            connection = DatasourceConfig.getMysqlDataSource("auth-server");
+            connection = dbUtil.getConnection("auth-server");
         } catch (Exception se) {
             log.error("Db connection error");
             log.error(se.toString());
