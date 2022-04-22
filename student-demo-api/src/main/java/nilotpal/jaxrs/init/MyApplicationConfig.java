@@ -1,7 +1,11 @@
 package nilotpal.jaxrs.init;
 
+import nilotpal.config.DatasourceConfig;
 import nilotpal.jaxrs.authentication.AuthenticationFilter;
 import nilotpal.jaxrs.resource.StudentResource;
+import nilotpal.service.EmployeeService;
+import nilotpal.service.StudentService;
+import nilotpal.service.UserServiceImpl;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,5 +24,9 @@ public class MyApplicationConfig extends ResourceConfig {
         register(new MyApplicationBinder());
         register(StudentResource.class);
         register(AuthenticationFilter.class);
+//        register(DatasourceConfig.class);
+//        register(EmployeeService.class);
+//        register(StudentService.class);
+//        register(UserServiceImpl.class);
     }
 }
