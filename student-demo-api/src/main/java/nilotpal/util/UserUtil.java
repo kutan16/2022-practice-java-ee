@@ -32,11 +32,13 @@ public class UserUtil {
      * @return the User
      */
     public static User processUserId(UserService userService, String userId) {
-        User user = Optional.ofNullable(cache.getIfPresent(userId)).orElse(userService.getUser(userId));
+        User user = cache.getIfPresent(userId);
         if(null == user) {
-            user = new User(userId, "not_found", "not_found", "not_found");
+            user = userService.getUser(userId);
+            if(null != user) {
+                cache.put(userId, user);
+            }
         }
-        cache.put(userId, user);
         return user;
     }
 }

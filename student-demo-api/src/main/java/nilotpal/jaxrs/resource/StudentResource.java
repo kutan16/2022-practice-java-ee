@@ -20,6 +20,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -225,6 +226,7 @@ public class StudentResource {
         log.info("User Data received is : " + Optional.ofNullable(users.toString()));
         List<User> fetchedUsers = users.stream()
                 .map(singleUser -> UserUtil.processUserId(userService, singleUser.getUserId()))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         if(!fetchedUsers.isEmpty()) {
             return Response.status(Response.Status.OK)
@@ -232,7 +234,7 @@ public class StudentResource {
                     .build();
         } else {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Not able to fetch any Users based on the provided userId")
+                    .entity("Not able to fetch any Users based on the provided userIds")
                     .build();
         }
     }

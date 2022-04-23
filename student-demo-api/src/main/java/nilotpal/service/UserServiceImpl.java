@@ -121,7 +121,7 @@ public class UserServiceImpl implements UserService {
                 user.setRoles(rs.getString("roles"));
                 user.setScopes(rs.getString("scopes"));
             }
-            if(!user.getUser_id().isEmpty()) {
+            if(null != user.getUser_id()) {
                 return user;
             }
             return null;
