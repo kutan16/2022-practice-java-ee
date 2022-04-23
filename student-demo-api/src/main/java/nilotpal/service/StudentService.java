@@ -1,11 +1,12 @@
 package nilotpal.service;
 
-import nilotpal.config.database.DatasourceConfig;
 import nilotpal.entity.Client;
+import nilotpal.util.DBUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,6 +20,12 @@ import java.util.List;
 public class StudentService implements ServiceInterface {
     private Connection connection = null;
     private static final Logger log = LoggerFactory.getLogger(StudentService.class);
+    private final DBUtil dbUtil;
+
+    @Inject
+    public StudentService(DBUtil dbUtil) {
+        this.dbUtil = dbUtil;
+    }
 
     /**
      * Instantiates the connection instance
@@ -27,7 +34,7 @@ public class StudentService implements ServiceInterface {
     public void initiate() {
         try {
             log.info("Inside post construct of StudentServiceImpl");
-            connection = DatasourceConfig.getMysqlDataSource("auth-server");
+            connection = dbUtil.getConnection("auth-server");
         } catch (Exception se) {
             log.error("Db connection error");
             log.error(se.toString());
@@ -83,14 +90,4 @@ public class StudentService implements ServiceInterface {
         client.setAuthorized_grant_types(rs.getString("authorized_grant_types"));
         listOfClient.add(client);
     }
-
-//    @PreDestroy
-//    public void destroy() {
-//        try {
-//            connection.close();
-//        } catch (Exception se) {
-//            log.error("connection closing error");
-//            log.error(se.toString());
-//        }
-//    }
 }

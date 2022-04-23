@@ -1,11 +1,12 @@
 package nilotpal.service;
 
-import nilotpal.config.database.DatasourceConfig;
 import nilotpal.entity.User;
+import nilotpal.util.DBUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,21 +14,37 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementation class of UserService
+ */
 public class UserServiceImpl implements UserService {
     private Connection connection = null;
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+    private final DBUtil dbUtil;
 
+    @Inject
+    public UserServiceImpl(DBUtil dbUtil) {
+        this.dbUtil = dbUtil;
+    }
+
+    /**
+     * Initializing connection object for mysql database if not already present
+     */
     @PostConstruct
     public void initiate() {
         try {
             log.info("Inside post construct of StudentServiceImpl");
-            connection = DatasourceConfig.getMysqlDataSource("auth-server");
+            connection = dbUtil.getConnection("auth-server");
         } catch (Exception se) {
             log.error("Db connection error");
             log.error(se.toString());
         }
     }
 
+    /**
+     * @param user A User entity
+     * @return true or false depending on the query executed or not
+     */
     @Override
     public boolean addUser(User user) {
         log.info("Inside addUser of UserServiceImpl");
@@ -45,6 +62,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * @param userId The user_id of the User
+     * @return true or false depending on the query executed or not
+     */
     @Override
     public boolean deleteUser(String userId) {
         log.info("Inside deleteUser of UserServiceImpl");
@@ -59,6 +80,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * @return A list of Users
+     */
     @Override
     public List<User> listAllUsers() {
         log.info("Inside listAllUsers of UserServiceImpl");
@@ -79,6 +103,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * @param userId The userId of the User
+     * @return A User
+     */
     @Override
     public User getUser(String userId) {
         log.info("Inside getUser of UserServiceImpl");
@@ -93,7 +121,7 @@ public class UserServiceImpl implements UserService {
                 user.setRoles(rs.getString("roles"));
                 user.setScopes(rs.getString("scopes"));
             }
-            if(!user.getUser_id().isEmpty()) {
+            if(null != user.getUser_id()) {
                 return user;
             }
             return null;
