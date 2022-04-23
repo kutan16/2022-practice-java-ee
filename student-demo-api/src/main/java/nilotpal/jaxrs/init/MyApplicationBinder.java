@@ -22,7 +22,6 @@ public class MyApplicationBinder extends AbstractBinder {
     @Override
     protected void configure() {
         log.info("Creating my application binder");
-//        bindAsContract(DatasourceConfig.class).in(Singleton.class);
         bindAsContract(CommonDataService.class);
         bind(StudentService.class).named("studentService").to(ServiceInterface.class).in(Singleton.class);
         bind(EmployeeService.class).named("employeeService").to(ServiceInterface.class).in(Singleton.class);
