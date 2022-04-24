@@ -4,22 +4,30 @@ import com.mysql.cj.jdbc.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import java.sql.Connection;
 
 /**
  * This class is responsible to instantiating MySqlDataSource object as well as DriverManager and Connection of Mysql
  */
 public class DatasourceConfig {
-    private static final String DB_USER = "nilotpal";
-    private static final String DB_PASSWORD = "nilotpal";
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/auth-server";
-    private static final int DB_PORT = 3306;
+    private String DB_USER;
+    private String DB_PASSWORD;
+    private String DB_URL;
 
     private static final Logger log = LoggerFactory.getLogger(DatasourceConfig.class);
 
     private static MysqlDataSource mysqlDataSource = null;
     private static Connection connection = null;
-    private static String DB_NAME = null;
+
+    @PostConstruct
+    public void loadPropertiesForDb() {
+        PropertyConfig properties = PropertyConfig.getInstance();
+        this.DB_USER = properties.get("db.username");
+        this.DB_PASSWORD = properties.get("db.password");
+        this.DB_URL = properties.get("db.url");
+        log.info("DatasourceConfig loaded with properties 'url = {} ', 'username = {} ','password = {} '", DB_URL, DB_USER, DB_PASSWORD);
+    }
 
     /**
      * Instantiates the Connection object
@@ -27,14 +35,11 @@ public class DatasourceConfig {
      * @param dbName name of the database(schema)
      * @return instance of Connection
      */
-    public static Connection getMysqlDataSource(String dbName) {
+    public Connection getMysqlDataSource(String dbName) {
         log.info("Inside getMysqlDataSource()");
         if(null == mysqlDataSource) {
             connect(DB_URL, DB_USER, DB_PASSWORD);
         }
-        log.info("memory db name : " + DB_NAME);
-        log.info("received db name : " + dbName);
-        DB_NAME = dbName;
         mysqlDataSource.setDatabaseName(dbName);
         log.info("Datasource created : " + dbName);
         try {
@@ -59,15 +64,13 @@ public class DatasourceConfig {
      * @param DB_USER     database username
      * @param DB_PASSWORD database password
      */
-    private static void connect(String DB_URL, String DB_USER, String DB_PASSWORD) {
+    private void connect(String DB_URL, String DB_USER, String DB_PASSWORD) {
         log.info("Inside datasource connect()");
         try {
             mysqlDataSource = new MysqlDataSource();
-//            mysqlDataSource.setServerName(DB_URL);
             mysqlDataSource.setUser(DB_USER);
             mysqlDataSource.setPassword(DB_PASSWORD);
             mysqlDataSource.setUrl(DB_URL);
-//            mysqlDataSource.setPort(DB_PORT);
         } catch (Exception e) {
             log.info("MysqlDataSource err: " + e.getMessage());
             e.printStackTrace();
