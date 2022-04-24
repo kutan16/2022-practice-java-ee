@@ -7,8 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 import javax.net.ssl.*;
+import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
@@ -20,8 +23,8 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -78,11 +81,8 @@ public class CertificateService {
             } else {
                 socket.connect(new InetSocketAddress(url.getHost(), port), timeout);
                 socket.startHandshake();
-                log.info("Socket handshake completed");
                 SSLSession session = socket.getSession();
-                log.info("SSLSession retrieved");
                 if(hostnameVerifier.verify(url.getHost(), session)) {
-                    log.info("Hostname verified");
                     return Arrays.asList(session.getPeerCertificates());
                 } else {
                     log.info("Unable to verify the hostname from url");
@@ -121,26 +121,46 @@ public class CertificateService {
 
     private CertificateInformation buildCertificateInformation(X509Certificate certificate) {
         CertificateInformation certificateInformation = new CertificateInformation();
-//        Map<String, String> rdns = getRdns(certificate.getSubjectX500Principal());
-        certificateInformation.setIssuer(certificate.getIssuerDN().getName());
-        certificateInformation.setSubject(certificate.getSubjectDN().getName());
-        certificateInformation.setValidFrom(certificate.getNotBefore());
-        certificateInformation.setValidTo(certificate.getNotAfter());
+        Map<String, String> issuer = getIssuerDN(certificate.getIssuerDN());
+        Map<String, String> subject = getSubjectDN(certificate.getSubjectDN());
+        certificateInformation.setIssuer(issuer.get("O"));
+        certificateInformation.setSubject(subject.get("CN"));
+        certificateInformation.setValidFrom(certificate.getNotBefore().toString());
+        certificateInformation.setValidTo(certificate.getNotAfter().toString());
         certificateInformation.setVersion(String.valueOf(certificate.getVersion()));
-        certificateInformation.setOrganization("");
-        certificateInformation.setDomainNames(null);
-        certificateInformation.setLocation(null);
+        certificateInformation.setAlgorithm(certificate.getSigAlgName());
+        certificateInformation.setOrganization(subject.get("O"));
+        certificateInformation.setDomainName(subject.get("CN"));
+        certificateInformation.setLocation(
+                new CertificateInformation.Location(subject.get("C"), subject.get("ST"), subject.get("L")));
         return certificateInformation;
     }
 
-//    private Map<String, String> getRdns(X500Principal subjectX500Principal) throws InvalidNameException {
-//        Map<String, String> rdns = new HashMap<>();
-//        rdns = new LdapName(subjectX500Principal.getName())
-//                .getRdns()
-//                .stream()
-//                .filter(this::filterRequiredRdn)
-//                .collect(Collectors.toMap(this::pickFromList),
-//    }
+    private Map<String, String> getSubjectDN(Principal subjectDN) {
+        Map<String, String> rdns = new HashMap<>();
+        String[] subject = subjectDN.getName().split(",");
+        String[] deepElements = null;
+        for (String eachElement : subject) {
+            deepElements = eachElement.split("=");
+            if(deepElements.length == 2) {
+                rdns.put(deepElements[0].trim(), deepElements[1]);
+            }
+        }
+        return rdns;
+    }
+
+    private Map<String, String> getIssuerDN(Principal issuerDN) {
+        Map<String, String> rdns = new HashMap<>();
+        String[] issuer = issuerDN.getName().split(",");
+        String[] deepElements = null;
+        for (String eachElement : issuer) {
+            deepElements = eachElement.split("=");
+            if(deepElements.length == 2) {
+                rdns.put(deepElements[0].trim(), deepElements[1]);
+            }
+        }
+        return rdns;
+    }
 
     private String pickFromList(Rdn rdn) {
         return Stream.of("O", "CN", "C", "ST", "L")

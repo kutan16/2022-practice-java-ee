@@ -13,18 +13,25 @@ public class CertificateInformation {
 
     private String version;
     private String issuer;
-    private Date validFrom;
-    private Date validTo;
+    private String validFrom;
+    private String validTo;
     private String subject;
-    private List<String> domainNames;
+    private String domainName;
     private String organization;
+    private String algorithm;
     private Location location;
 
     @Data
-    static class Location {
+    public static class Location {
         private String region;
         private String province;
         private String locality;
+
+        public Location(String region, String province, String locality) {
+            this.region = region;
+            this.province = province;
+            this.locality = locality;
+        }
     }
 
 
