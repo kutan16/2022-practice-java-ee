@@ -1,6 +1,11 @@
     Accessing certificates from URLs provided
     
-    Path : /students/certInfo
+    Path : /student/certInfo
+
+    Method : POST
+
+    Header : 
+            Authorization : Bearer token
 
     Request :
             

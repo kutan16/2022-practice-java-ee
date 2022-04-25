@@ -10,6 +10,6 @@ A demo project which features the usage of the following :
     8. using sslsocket connection to download certificates from ssl/tls secured websites
 
 
-API
+API Specifications :
 
-All the relevant api specs can be accessed from [api-specs](https://github.com/kutan16/2022-practice-java-ee/blob/misc_enhancements_or_fixes_or_documentation/student-demo-api/docs/api-specs.md)
+All the relevant api specs can be accessed from [api-specs](https://github.com/kutan16/2022-practice-java-ee/blob/misc_enhancements_or_fixes_or_documentation/student-demo-api/docs)
