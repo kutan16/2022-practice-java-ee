@@ -12,4 +12,4 @@ A demo project which features the usage of the following :
 
 API
 
-All the relevant api specs can be accessed from [api-specs](/docs/api-specs.md)
+All the relevant api specs can be accessed from [api-specs](https://github.com/kutan16/2022-practice-java-ee/blob/misc_enhancements_or_fixes_or_documentation/student-demo-api/docs/api-specs.md)
