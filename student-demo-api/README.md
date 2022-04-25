@@ -12,4 +12,4 @@ A demo project which features the usage of the following :
 
 API
 
-All the relevant api specs can be accessed from [api-specs](../docs/api-specs.md)
+All the relevant api specs can be accessed from [api-specs](/docs/api-specs.md)
