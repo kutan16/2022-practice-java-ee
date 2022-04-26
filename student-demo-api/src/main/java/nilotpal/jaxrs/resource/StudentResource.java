@@ -2,11 +2,10 @@ package nilotpal.jaxrs.resource;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import nilotpal.certificate.CertificateService;
+import nilotpal.certificate.StoreTrustedCertificates;
 import nilotpal.data.CommonData;
-import nilotpal.entity.Client;
-import nilotpal.entity.SingleUser;
-import nilotpal.entity.Student;
-import nilotpal.entity.User;
+import nilotpal.entity.*;
 import nilotpal.service.ServiceInterface;
 import nilotpal.service.UserService;
 import nilotpal.util.UserUtil;
@@ -19,6 +18,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,7 +39,7 @@ public class StudentResource {
     private final ServiceInterface studentService;
     private final ServiceInterface employeeService;
     private final UserService userService;
-
+    private final CertificateService certificateService;
     private final Cache<String, Client> cache = Caffeine
             .newBuilder()
             .expireAfterWrite(1, TimeUnit.MINUTES)
@@ -49,20 +50,23 @@ public class StudentResource {
     /**
      * Injecting dependencies via the Constructor
      *
-     * @param httpHeaders     HttpHeaders from request context
-     * @param studentService  The Student Service implementation class with connection to Db
-     * @param employeeService An Employee Service implementation class
-     * @param userService     A User Service implementation class
+     * @param httpHeaders              HttpHeaders from request context
+     * @param studentService           The Student Service implementation class with connection to Db
+     * @param employeeService          An Employee Service implementation class
+     * @param userService              A User Service implementation class
+     * @param certificateService       The Certificate Fetching Service
      */
     @Inject
     public StudentResource(HttpHeaders httpHeaders,
                            @Named("studentService") ServiceInterface studentService,
                            @Named("employeeService") ServiceInterface employeeService,
-                           @Named("userService") UserService userService) {
+                           @Named("userService") UserService userService,
+                           CertificateService certificateService) {
         this.httpHeaders = httpHeaders;
         this.studentService = studentService;
         this.employeeService = employeeService;
         this.userService = userService;
+        this.certificateService = certificateService;
     }
 
     /**
@@ -239,4 +243,49 @@ public class StudentResource {
         }
     }
 
+    /**
+     * Accepts a list of urls to extract Certificates and display information from the certificates
+     *
+     * @param urls A list of https urls
+     * @return A list of information from the extracted urls
+     */
+    @POST
+    @Path("certInfo")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCertificates(List<Urls> urls) {
+        log.info("Received list of urls {}", urls.toString());
+        List<CertificateInformation> certificateInformationList = urls.stream()
+                .map(url -> {
+                    URI singleURI = null;
+                    try {
+                        singleURI = normalizeUrl(url.getUrl());
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return certificateService.getCertificateInformation(singleURI);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        if(!certificateInformationList.isEmpty()) {
+            return Response.status(Response.Status.OK)
+                    .entity(certificateInformationList)
+                    .build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Not able to fetch any certificates based on provided urls")
+                    .build();
+        }
+    }
+
+    /**
+     * Normalizes the String url into a URI
+     *
+     * @param url A String representation of an Url
+     * @return A URI
+     * @throws URISyntaxException Throws exception when the Url provided is incorrect and not parse able
+     */
+    public URI normalizeUrl(String url) throws URISyntaxException {
+        return new URI(url);
+    }
 }
