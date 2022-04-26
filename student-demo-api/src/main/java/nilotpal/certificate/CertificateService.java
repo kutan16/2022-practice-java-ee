@@ -7,11 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 import javax.net.ssl.*;
-import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
@@ -23,8 +20,10 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -38,6 +37,9 @@ public class CertificateService {
     private final StoreTrustedCertificates storeTrustedCertificates;
     private final Logger log = LoggerFactory.getLogger(CertificateService.class);
 
+    /**
+     * @param storeTrustedCertificates Injects {@link StoreTrustedCertificates}
+     */
     @Inject
     public CertificateService(StoreTrustedCertificates storeTrustedCertificates) {
         this.storeTrustedCertificates = storeTrustedCertificates;
@@ -46,16 +48,11 @@ public class CertificateService {
     }
 
     /**
-     * Initializing Property configuration , SSLSocket , Hostname Verifier
+     * Get the certificate information from the provided url
      *
-     * @param sslSocketProvider A provider encapsulated SSLSocket
+     * @param url The url from which to fetch certificates
+     * @return {@link CertificateInformation CertificateInformation} object
      */
-//    @Inject
-//    public CertificateService(Provider<SSLSocket> sslSocketProvider) {
-//        this.propertyConfig = PropertyConfig.getInstance();
-//        this.sslSocketProvider = sslSocketProvider;
-//        this.hostnameVerifier = new DefaultHostnameVerifier();
-//    }
     public CertificateInformation getCertificateInformation(URI url) {
         List<Certificate> certificates = getCertificates(url);
         if(null != certificates && !certificates.isEmpty()) {
@@ -101,7 +98,17 @@ public class CertificateService {
             return null;
         }
     }
-
+    /**
+     * Get the keystore and loads it to the SocketFactory
+     *
+     * @return {@link SSLSocketFactory}
+     * @throws KeyStoreException This exception is thrown if a key in the keystore cannot be recovered.
+     * @throws UnrecoverableKeyException This exception is thrown if a key in the keystore cannot be recovered.
+     * @throws KeyManagementException This is the general key management exception for all operations dealing with key management.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws CertificateException This exception indicates one of a variety of certificate problems
+     * @throws NoSuchAlgorithmException This exception is thrown when a particular cryptographic algorithm is requested but is not available in the environment.
+     */
     private SSLSocketFactory getCustomSocketFactory() throws KeyStoreException, UnrecoverableKeyException, KeyManagementException, IOException, CertificateException, NoSuchAlgorithmException {
         log.info("Using getCustomSocketFactory()");
         String keyStoreFile = propertyConfig.get("socket.keystore");
@@ -119,6 +126,10 @@ public class CertificateService {
 
     }
 
+    /**
+     * @param certificate The {@link X509Certificate}
+     * @return {@link CertificateInformation}
+     */
     private CertificateInformation buildCertificateInformation(X509Certificate certificate) {
         CertificateInformation certificateInformation = new CertificateInformation();
         Map<String, String> issuer = getIssuerDN(certificate.getIssuerDN());
@@ -136,6 +147,10 @@ public class CertificateService {
         return certificateInformation;
     }
 
+    /**
+     * @param subjectDN The {@link Principal} for subject
+     * @return A Map of extracted subject names
+     */
     private Map<String, String> getSubjectDN(Principal subjectDN) {
         Map<String, String> rdns = new HashMap<>();
         String[] subject = subjectDN.getName().split(",");
@@ -149,6 +164,10 @@ public class CertificateService {
         return rdns;
     }
 
+    /**
+     * @param issuerDN The {@link  Principal} for issuer
+     * @return A Map of extracted issuer names
+     */
     private Map<String, String> getIssuerDN(Principal issuerDN) {
         Map<String, String> rdns = new HashMap<>();
         String[] issuer = issuerDN.getName().split(",");
@@ -162,14 +181,4 @@ public class CertificateService {
         return rdns;
     }
 
-    private String pickFromList(Rdn rdn) {
-        return Stream.of("O", "CN", "C", "ST", "L")
-                .filter(pick -> pick.equals(rdn.getType())).findFirst()
-                .orElseThrow(() -> new RuntimeException(rdn.getType() + " is not an rdn used"));
-    }
-
-    private boolean filterRequiredRdn(Rdn rdn) {
-        return Stream.of("O", "CN", "C", "ST", "L")
-                .anyMatch(fromList -> fromList.equals(rdn.getType()));
-    }
 }

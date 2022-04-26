@@ -22,11 +22,19 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * It is responsible for storing the domains into the truststore
+ */
 public class StoreTrustedCertificates {
     private final PropertyConfig propertyConfig = PropertyConfig.getInstance();
     private final Provider<SSLSocket> socketProvider;
     private final Logger log = LoggerFactory.getLogger(StoreTrustedCertificates.class);
 
+    /**
+     * @param socketProvider The Custom {@link SSLSocketProvider} currently unused
+     * @throws CertificateException This exception indicates one of a variety of certificate problems.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
     @Inject
     public StoreTrustedCertificates(Provider<SSLSocket> socketProvider) throws CertificateException, IOException {
         this.socketProvider = socketProvider;
@@ -35,6 +43,14 @@ public class StoreTrustedCertificates {
         writeCertificatesToStore(trustedCertificates, keyStore, propertyConfig.get("socket.keystore"), propertyConfig.get("socket.keystorePassword"));
     }
 
+    /**
+     * Download the certificates from the provided mozilla rl and stores them into the truststore
+     *
+     * @param url The url for download the certificates to store the domains
+     * @return A list of {@link  X509Certificate}
+     * @throws CertificateException This exception indicates one of a variety of certificate problems.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
     private List<X509Certificate> downloadCertificatesFromUrl(String url) throws CertificateException, IOException {
         log.info("Trying to download certificates from  {}", url);
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X509", new BouncyCastleProvider());
@@ -45,6 +61,9 @@ public class StoreTrustedCertificates {
 
     }
 
+    /**
+     * @return The loaded {@link KeyStore}
+     */
     public KeyStore loadKeyStore() {
         try (FileInputStream fileInputStream = new FileInputStream(propertyConfig.get("socket.keystore"))) {
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -56,6 +75,14 @@ public class StoreTrustedCertificates {
         }
     }
 
+    /**
+     * Writes the certificates to the truststore
+     *
+     * @param trustedCertificates A list of {@link  X509Certificate} certificates
+     * @param keyStore The {@link KeyStore} that was loaded
+     * @param trustStorePath The path to the truststore file
+     * @param trustStorePassword The password for the truststore file
+     */
     private void writeCertificatesToStore(List<X509Certificate> trustedCertificates, KeyStore keyStore, String trustStorePath, String trustStorePassword) {
         log.info("Trying to write the downloaded certificates to the truststore");
         for (X509Certificate certificate : trustedCertificates) {
