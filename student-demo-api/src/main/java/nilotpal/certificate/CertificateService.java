@@ -98,16 +98,17 @@ public class CertificateService {
             return null;
         }
     }
+
     /**
      * Get the keystore and loads it to the SocketFactory
      *
      * @return {@link SSLSocketFactory}
-     * @throws KeyStoreException This exception is thrown if a key in the keystore cannot be recovered.
+     * @throws KeyStoreException         This exception is thrown if a key in the keystore cannot be recovered.
      * @throws UnrecoverableKeyException This exception is thrown if a key in the keystore cannot be recovered.
-     * @throws KeyManagementException This is the general key management exception for all operations dealing with key management.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
-     * @throws CertificateException This exception indicates one of a variety of certificate problems
-     * @throws NoSuchAlgorithmException This exception is thrown when a particular cryptographic algorithm is requested but is not available in the environment.
+     * @throws KeyManagementException    This is the general key management exception for all operations dealing with key management.
+     * @throws IOException               Signals that an I/O exception of some sort has occurred.
+     * @throws CertificateException      This exception indicates one of a variety of certificate problems
+     * @throws NoSuchAlgorithmException  This exception is thrown when a particular cryptographic algorithm is requested but is not available in the environment.
      */
     private SSLSocketFactory getCustomSocketFactory() throws KeyStoreException, UnrecoverableKeyException, KeyManagementException, IOException, CertificateException, NoSuchAlgorithmException {
         log.info("Using getCustomSocketFactory()");
@@ -132,8 +133,8 @@ public class CertificateService {
      */
     private CertificateInformation buildCertificateInformation(X509Certificate certificate) {
         CertificateInformation certificateInformation = new CertificateInformation();
-        Map<String, String> issuer = getIssuerDN(certificate.getIssuerDN());
-        Map<String, String> subject = getSubjectDN(certificate.getSubjectDN());
+        Map<String, String> issuer = getDN(certificate.getIssuerDN());
+        Map<String, String> subject = getDN(certificate.getSubjectDN());
         certificateInformation.setIssuer(issuer.get("O"));
         certificateInformation.setSubject(subject.get("CN"));
         certificateInformation.setValidFrom(certificate.getNotBefore().toString());
@@ -148,31 +149,14 @@ public class CertificateService {
     }
 
     /**
-     * @param subjectDN The {@link Principal} for subject
-     * @return A Map of extracted subject names
-     */
-    private Map<String, String> getSubjectDN(Principal subjectDN) {
-        Map<String, String> rdns = new HashMap<>();
-        String[] subject = subjectDN.getName().split(",");
-        String[] deepElements = null;
-        for (String eachElement : subject) {
-            deepElements = eachElement.split("=");
-            if(deepElements.length == 2) {
-                rdns.put(deepElements[0].trim(), deepElements[1]);
-            }
-        }
-        return rdns;
-    }
-
-    /**
-     * @param issuerDN The {@link  Principal} for issuer
+     * @param dn The {@link  Principal} for either issuer or subject
      * @return A Map of extracted issuer names
      */
-    private Map<String, String> getIssuerDN(Principal issuerDN) {
+    private Map<String, String> getDN(Principal dn) {
         Map<String, String> rdns = new HashMap<>();
-        String[] issuer = issuerDN.getName().split(",");
+        String[] data = dn.getName().split(",");
         String[] deepElements = null;
-        for (String eachElement : issuer) {
+        for (String eachElement : data) {
             deepElements = eachElement.split("=");
             if(deepElements.length == 2) {
                 rdns.put(deepElements[0].trim(), deepElements[1]);
