@@ -7,7 +7,7 @@ import nilotpal.entity.User;
 import nilotpal.service.UserService;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Util class to process user id to fetch User
@@ -34,11 +34,31 @@ public class UserUtil {
     public static User processUserId(UserService userService, String userId) {
         User user = cache.getIfPresent(userId);
         if(null == user) {
+            try {
+                Thread.sleep(50);
+                System.out.println("slept");
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             user = userService.getUser(userId);
             if(null != user) {
                 cache.put(userId, user);
             }
         }
+        return user;
+    }
+
+    private static User executeUser(String userId, UserService userService) {
+        User user = null;
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            user = userService.getUser(userId);
+            if(null != user) {
+                cache.put(userId, user);
+            }
         return user;
     }
 }

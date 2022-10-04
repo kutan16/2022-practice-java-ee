@@ -91,7 +91,7 @@ public class StudentResource {
     }
 
     private Student fetchStudent(Integer studentId, List<Student> students) {
-        return students.stream()
+        return students.parallelStream()
                 .filter(student -> studentId.equals(student.getStudent_id()))
                 .findFirst().orElse(null);
     }
@@ -224,7 +224,7 @@ public class StudentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response acceptUsers(List<SingleUser> users) {
         log.info("User Data received is : " + Optional.ofNullable(users.toString()));
-        List<User> fetchedUsers = users.stream()
+        List<User> fetchedUsers = users.parallelStream()
                 .map(singleUser -> UserUtil.processUserId(userService, singleUser.getUserId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
